@@ -46,7 +46,7 @@ jobs:
       # Manually restore and then save, so that we can save the "_build" directory
       # *without* the Elixir compiled code in it.
       - name: Restore Mix dependencies cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         id: mix-deps-cache
         with:
           path: |
@@ -60,7 +60,7 @@ jobs:
         run: mix do deps.get --check-locked, deps.compile
 
       - name: Save Mix dependencies cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         if: steps.mix-deps-cache.outputs.cache-hit != 'true'
         with:
           path: |
@@ -80,7 +80,7 @@ jobs:
         run: mix test
 
       - name: Retrieve PLT Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         if: matrix.lint
         id: plt-cache
         with:
