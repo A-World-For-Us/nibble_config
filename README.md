@@ -1,11 +1,10 @@
 # NibbleConfig
 
-**TODO: Add description**
+**Co-localize configuration with the module that uses it**
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `nibble_config` to your list of dependencies in `mix.exs`:
+The package can be installed by adding `nibble_config` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,6 +14,8 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/nibble_config>.
+The docs can be found at <https://hexdocs.pm/nibble_config>.
+
+## Contributing
+
+To start contributing, setup your environment by running `mix setup` inside the repository.
