@@ -33,8 +33,8 @@ defmodule NibbleConfig do
   They then need to be declared in `config/runtime.exs`:
 
       NibbleConfig.new()
-      |> NibbleConfig.load_for(:my_app, MyApp.MyExternalService)
-      |> NibbleConfig.load_for(:my_app, MyApp.SomeOtherService)
+      |> NibbleConfig.load_for(MyApp.MyExternalService)
+      |> NibbleConfig.load_for(MyApp.SomeOtherService)
       |> NibbleConfig.apply_config()
 
   """
@@ -60,17 +60,37 @@ defmodule NibbleConfig do
     }
   end
 
+  @typedoc """
+  - `:otp_app` - the OTP app to store `module`'s configuration under. Only required
+    if `module` was not declared with `use NibbleConfig, otp_app: ...`; when given,
+    it takes precedence over the value declared by `use NibbleConfig`.
+  """
+  @type load_for_opt :: {:otp_app, atom()}
+
   @doc """
   Loads `module`'s configuration and stores it. The configuration is converted
   to a map before being stored.
 
   `module` must implement the `NibbleConfig` behaviour.
   """
-  @spec load_for(t(), atom(), module()) :: t()
-  def load_for(%__MODULE__{} = nibble_config, otp_app, module) when is_atom(otp_app) and is_atom(module) do
+  @spec load_for(t(), module(), [load_for_opt()]) :: t()
+  def load_for(%__MODULE__{} = nibble_config, module, opts \\ []) when is_atom(module) do
     if not Code.ensure_loaded?(module) do
       raise ArgumentError, "module #{inspect(module)} is not loaded"
     end
+
+    otp_app =
+      cond do
+        option_otp_app = Keyword.get(opts, :otp_app) ->
+          option_otp_app
+
+        inferred_otp_app = module.__nimble_otp_app__() ->
+          inferred_otp_app
+
+        true ->
+          raise ArgumentError,
+                "no :otp_app given and #{inspect(module)} was not declared with `use NibbleConfig, otp_app: ...`"
+      end
 
     module_config =
       nibble_config
@@ -126,6 +146,9 @@ defmodule NibbleConfig do
       @behaviour unquote(__MODULE__)
 
       import Config, only: [config_env: 0, config_target: 0]
+
+      @doc false
+      def __nimble_otp_app__, do: unquote(otp_app)
 
       if unquote(otp_app != nil) do
         @spec config(key :: term()) :: value :: term()
