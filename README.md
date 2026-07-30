@@ -9,7 +9,7 @@ The package can be installed by adding `nibble_config` to your list of dependenc
 ```elixir
 def deps do
   [
-    {:nibble_config, "~> 0.1.0"}
+    {:nibble_config, "~> 0.2.0"}
   ]
 end
 ```
