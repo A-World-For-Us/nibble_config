@@ -21,3 +21,6 @@ erl_crash.dump
 
 # Ignore package tarball (built via "mix hex.build").
 nibble_config-*.tar
+
+# Dialyzer PLT files
+/priv/plts
