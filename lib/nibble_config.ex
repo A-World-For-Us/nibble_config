@@ -35,7 +35,7 @@ defmodule NibbleConfig do
       NibbleConfig.new()
       |> NibbleConfig.load_for(MyApp.MyExternalService)
       |> NibbleConfig.load_for(MyApp.SomeOtherService)
-      |> NibbleConfig.apply_config()
+      |> NibbleConfig.finalize()
 
   """
 
@@ -109,10 +109,10 @@ defmodule NibbleConfig do
   end
 
   @doc """
-  Writes all loaded configuration to the application environment.
+  Apply the configuration, and terminates the instance.
   """
-  @spec apply_config(t()) :: :ok
-  def apply_config(%__MODULE__{} = nibble_config) do
+  @spec finalize(t()) :: :ok
+  def finalize(%__MODULE__{} = nibble_config) do
     for {otp_app, configuration} <- nibble_config.loaded_configs do
       Config.config(otp_app, configuration)
     end

@@ -152,20 +152,20 @@ defmodule NibbleConfigTest do
     end
   end
 
-  describe "apply_config/1" do
+  describe "finalize/1" do
     defp eval_config(code) do
       Config.Reader.eval!("nofile.exs", code, env: :test, target: :host)
     end
 
     test "is a no-op returning :ok for an empty loader" do
-      assert NibbleConfig.apply_config(NibbleConfig.new()) == :ok
+      assert NibbleConfig.finalize(NibbleConfig.new()) == :ok
     end
 
     test "writes a module's config to the application env when run through Config.Reader" do
       code = """
       NibbleConfig.new()
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
-      |> NibbleConfig.apply_config()
+      |> NibbleConfig.finalize()
       """
 
       assert eval_config(code) == [
@@ -180,7 +180,7 @@ defmodule NibbleConfigTest do
       NibbleConfig.new()
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleReturningMap, otp_app: :nibble_config_test_app)
-      |> NibbleConfig.apply_config()
+      |> NibbleConfig.finalize()
       """
 
       assert eval_config(code) == [
@@ -197,7 +197,7 @@ defmodule NibbleConfigTest do
       NibbleConfig.new()
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp, otp_app: :nibble_config_test_app_a)
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleReturningMap, otp_app: :nibble_config_test_app_b)
-      |> NibbleConfig.apply_config()
+      |> NibbleConfig.finalize()
       """
 
       assert eval_config(code) == [
@@ -211,7 +211,7 @@ defmodule NibbleConfigTest do
       NibbleConfig.new()
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
-      |> NibbleConfig.apply_config()
+      |> NibbleConfig.finalize()
       """
 
       result = eval_config(code)
@@ -223,7 +223,7 @@ defmodule NibbleConfigTest do
       code = """
       NibbleConfig.new()
       |> NibbleConfig.load_for(NibbleConfigTest.ModuleUsingConfigEnv)
-      |> NibbleConfig.apply_config()
+      |> NibbleConfig.finalize()
       """
 
       assert eval_config(code) == [
