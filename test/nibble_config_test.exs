@@ -48,7 +48,7 @@ defmodule NibbleConfigTest do
 
   describe "new/0" do
     test "returns an empty loader" do
-      assert NibbleConfig.new() == %NibbleConfig{loaded_configs: %{}}
+      assert NibbleConfig.new() == %NibbleConfig{internal: %{loaded_configs: %{}}}
     end
   end
 
@@ -56,7 +56,7 @@ defmodule NibbleConfigTest do
     test "loads a module's config, converts it to a map, and stores it under the given otp_app" do
       nc = NibbleConfig.load_for(NibbleConfig.new(), NibbleConfigTest.ModuleWithApp, otp_app: :other_app)
 
-      assert nc.loaded_configs == %{
+      assert nc.internal.loaded_configs == %{
                other_app: [{NibbleConfigTest.ModuleWithApp, %{foo: 1, bar: "baz"}}]
              }
     end
@@ -64,7 +64,7 @@ defmodule NibbleConfigTest do
     test "infers the otp_app from `use NibbleConfig, otp_app: ...`" do
       nc = NibbleConfig.load_for(NibbleConfig.new(), NibbleConfigTest.ModuleWithApp)
 
-      assert nc.loaded_configs == %{
+      assert nc.internal.loaded_configs == %{
                nibble_config_test_app: [{NibbleConfigTest.ModuleWithApp, %{foo: 1, bar: "baz"}}]
              }
     end
@@ -72,13 +72,15 @@ defmodule NibbleConfigTest do
     test "the :otp_app option takes precedence over the one declared with `use NibbleConfig`" do
       nc = NibbleConfig.load_for(NibbleConfig.new(), NibbleConfigTest.ModuleWithApp, otp_app: :override_app)
 
-      assert Map.keys(nc.loaded_configs) == [:override_app]
+      assert Map.keys(nc.internal.loaded_configs) == [:override_app]
     end
 
     test "accepts a load_config/1 callback returning a map" do
       nc = NibbleConfig.load_for(NibbleConfig.new(), NibbleConfigTest.ModuleReturningMap)
 
-      assert nc.loaded_configs == %{nibble_config_test_app: [{NibbleConfigTest.ModuleReturningMap, %{a: 1, b: 2}}]}
+      assert nc.internal.loaded_configs == %{
+               nibble_config_test_app: [{NibbleConfigTest.ModuleReturningMap, %{a: 1, b: 2}}]
+             }
     end
 
     test "passes the pre-update accumulator as ctx to load_config/1" do
@@ -95,7 +97,7 @@ defmodule NibbleConfigTest do
         |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
         |> NibbleConfig.load_for(NibbleConfigTest.ModuleReturningMap)
 
-      assert nc.loaded_configs[:nibble_config_test_app] == [
+      assert nc.internal.loaded_configs[:nibble_config_test_app] == [
                {NibbleConfigTest.ModuleReturningMap, %{a: 1, b: 2}},
                {NibbleConfigTest.ModuleWithApp, %{foo: 1, bar: "baz"}}
              ]
@@ -107,7 +109,7 @@ defmodule NibbleConfigTest do
         |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp, otp_app: :app_a)
         |> NibbleConfig.load_for(NibbleConfigTest.ModuleReturningMap, otp_app: :app_b)
 
-      assert nc.loaded_configs == %{
+      assert nc.internal.loaded_configs == %{
                app_a: [{NibbleConfigTest.ModuleWithApp, %{foo: 1, bar: "baz"}}],
                app_b: [{NibbleConfigTest.ModuleReturningMap, %{a: 1, b: 2}}]
              }
@@ -145,7 +147,7 @@ defmodule NibbleConfigTest do
         |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
         |> NibbleConfig.load_for(NibbleConfigTest.ModuleWithApp)
 
-      assert nc.loaded_configs[:nibble_config_test_app] == [
+      assert nc.internal.loaded_configs[:nibble_config_test_app] == [
                {NibbleConfigTest.ModuleWithApp, %{foo: 1, bar: "baz"}},
                {NibbleConfigTest.ModuleWithApp, %{foo: 1, bar: "baz"}}
              ]
@@ -288,7 +290,7 @@ defmodule NibbleConfigTest do
     test "the module still works with load_for/3 when given an explicit :otp_app" do
       nc = NibbleConfig.load_for(NibbleConfig.new(), NibbleConfigTest.ModuleWithoutApp, otp_app: :test_app)
 
-      assert nc.loaded_configs == %{test_app: [{NibbleConfigTest.ModuleWithoutApp, %{foo: 1}}]}
+      assert nc.internal.loaded_configs == %{test_app: [{NibbleConfigTest.ModuleWithoutApp, %{foo: 1}}]}
     end
 
     test "raises ArgumentError when loaded via load_for/3 without an :otp_app" do

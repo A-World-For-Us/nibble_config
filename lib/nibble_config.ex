@@ -39,15 +39,24 @@ defmodule NibbleConfig do
 
   """
 
-  @enforce_keys [:loaded_configs]
-  defstruct [:loaded_configs]
+  @enforce_keys [:internal]
+  defstruct [:internal]
 
+  @typedoc """
+  The context passed around the configuration.
+
+  ## Fields
+
+  - `:internal` - used for data internal to the library only, do not use it.
+  """
   @type t :: %__MODULE__{
-          loaded_configs: loaded_configs()
+          internal: internal()
         }
 
-  @typep loaded_configs :: %{
-           optional(otp_app :: atom()) => [{module(), module_config :: %{term() => term()}}]
+  @typep internal :: %{
+           loaded_configs: %{
+             optional(otp_app :: atom()) => [{module(), module_config :: %{term() => term()}}]
+           }
          }
 
   @doc """
@@ -56,7 +65,9 @@ defmodule NibbleConfig do
   @spec new() :: t()
   def new do
     %__MODULE__{
-      loaded_configs: %{}
+      internal: %{
+        loaded_configs: %{}
+      }
     }
   end
 
@@ -97,15 +108,10 @@ defmodule NibbleConfig do
       |> module.load_config()
       |> Map.new()
 
-    updated_loaded_configs =
-      Map.update(
-        nibble_config.loaded_configs,
-        otp_app,
-        [{module, module_config}],
-        fn existing_configs -> [{module, module_config} | existing_configs] end
-      )
-
-    %{nibble_config | loaded_configs: updated_loaded_configs}
+    update_in(nibble_config.internal.loaded_configs[otp_app], fn
+      existing_configs when is_list(existing_configs) -> [{module, module_config} | existing_configs]
+      nil -> [{module, module_config}]
+    end)
   end
 
   @doc """
@@ -113,7 +119,7 @@ defmodule NibbleConfig do
   """
   @spec finalize(t()) :: :ok
   def finalize(%__MODULE__{} = nibble_config) do
-    for {otp_app, configuration} <- nibble_config.loaded_configs do
+    for {otp_app, configuration} <- nibble_config.internal.loaded_configs do
       Config.config(otp_app, configuration)
     end
 
