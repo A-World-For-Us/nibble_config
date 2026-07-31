@@ -50,7 +50,7 @@ defmodule NibbleConfig.MixProject do
         "deps.compile",
         "git_ops.message_hook"
       ],
-      release: ["git_ops.release --yes"]
+      release: ["git_ops.release --no-major --yes"]
     ]
   end
 
